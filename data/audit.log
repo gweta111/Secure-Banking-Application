@@ -1,0 +1,12 @@
+[2026-09-06 19:37:33] [USER_REGISTERED   ] [Actor: robert_kadya   ] New user registered with UserID: USR-2B36B267
+[2026-09-06 19:37:34] [ACCOUNT_CREATED   ] [Actor: robert_kadya   ] Opened SAVINGS account: ACC-SAV-1001
+[2026-09-06 19:37:34] [ACCOUNT_CREATED   ] [Actor: robert_kadya   ] Opened CHECKING account: ACC-CHK-1002
+[2026-09-06 19:37:34] [TRANSACTION       ] [Actor: robert_kadya   ] DEPOSIT of $100.00 on account ACC-SAV-1001
+[2026-09-06 19:37:34] [TRANSACTION       ] [Actor: robert_kadya   ] WITHDRAWAL of $50.00 on account ACC-SAV-1001
+[2026-09-06 19:37:34] [TRANSFER_EXECUTED ] [Actor: robert_kadya   ] Transferred $75.00 from ACC-SAV-1001 to ACC-CHK-1002
+[2026-09-07 18:51:28] [SYSTEM_STARTUP    ] [Actor: SYSTEM         ] Secure Banking Application initializing...
+[2026-09-07 18:51:28] [DATA_LOADED       ] [Actor: SYSTEM         ] Existing users, accounts, and transactions loaded successfully.
+[2026-09-07 18:51:28] [SYSTEM_SHUTDOWN   ] [Actor: SYSTEM         ] Secure Banking Application terminated cleanly.
+[2026-09-07 18:51:41] [SYSTEM_STARTUP    ] [Actor: SYSTEM         ] Secure Banking Application initializing...
+[2026-09-07 18:51:41] [DATA_LOADED       ] [Actor: SYSTEM         ] Existing users, accounts, and transactions loaded successfully.
+[2026-09-07 18:51:41] [SYSTEM_SHUTDOWN   ] [Actor: SYSTEM         ] Secure Banking Application terminated cleanly.
