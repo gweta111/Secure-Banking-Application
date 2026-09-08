@@ -1,0 +1,22 @@
+# Build artifacts
+bin/
+target/
+out/
+*.class
+
+# Temporary files
+*.tmp
+*.bak
+*.swp
+
+# IDE and Editor files
+.idea/
+.vscode/
+*.iml
+.project
+.classpath
+.settings/
+
+# OS metadata
+.DS_Store
+Thumbs.db
