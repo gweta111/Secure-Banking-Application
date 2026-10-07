@@ -54,7 +54,6 @@ public class CheckingAccount extends Account {
 
     @Override
     public String getAccountSummary() {
-        return String.format("Type: CHECKING| Balance: $%9.2f | Overdraft Protection: $%7.2f",
-                getBalance(), overdraftLimit);
+        return String.format("Overdraft Limit: $%.2f", overdraftLimit);
     }
 }
