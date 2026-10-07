@@ -5,6 +5,7 @@ import com.securebank.model.BankingException;
 import com.securebank.model.Transaction;
 import com.securebank.model.User;
 import com.securebank.security.InputValidator;
+import com.securebank.security.PasswordSecurity;
 import com.securebank.service.AuthenticationService;
 import com.securebank.service.BankService;
 
@@ -55,17 +56,19 @@ public class ConsoleInterface {
         System.out.println("\n--- MAIN AUTHENTICATION MENU ---");
         System.out.println("1. Login to Existing Account");
         System.out.println("2. Register New User");
-        System.out.println("3. Exit Application");
-        System.out.print("Select an option (1-3): ");
+        System.out.println("3. Test / Validate Password Policy");
+        System.out.println("4. Exit Application");
+        System.out.print("Select an option (1-4): ");
 
         String choice = scanner.nextLine().trim();
         switch (choice) {
             case "1" -> handleLogin();
             case "2" -> handleRegistration();
-            case "3" -> {
+            case "3" -> handleTestPasswordPolicy();
+            case "4" -> {
                 return false;
             }
-            default -> System.out.println("[!] Invalid option. Please enter 1, 2, or 3.");
+            default -> System.out.println("[!] Invalid option. Please enter 1, 2, 3, or 4.");
         }
         return true;
     }
@@ -98,6 +101,8 @@ public class ConsoleInterface {
         String username = scanner.nextLine().trim();
 
         String password = readPassword("Enter Strong Password: ");
+        displayPasswordStrengthEvaluation(password);
+
         String confirmPassword = readPassword("Confirm Password: ");
 
         if (!password.equals(confirmPassword)) {
@@ -125,8 +130,9 @@ public class ConsoleInterface {
         System.out.println("4. Withdraw Funds");
         System.out.println("5. Transfer Funds to Another Account");
         System.out.println("6. View Account Transaction History");
-        System.out.println("7. Logout");
-        System.out.print("Select an option (1-7): ");
+        System.out.println("7. Verify Account Password & Security Status");
+        System.out.println("8. Logout");
+        System.out.print("Select an option (1-8): ");
 
         String choice = scanner.nextLine().trim();
         switch (choice) {
@@ -136,11 +142,12 @@ public class ConsoleInterface {
             case "4" -> handleWithdraw(currentUser);
             case "5" -> handleTransfer(currentUser);
             case "6" -> handleTransactionHistory(currentUser);
-            case "7" -> {
+            case "7" -> handleVerifyPassword(currentUser);
+            case "8" -> {
                 authService.logout();
                 System.out.println("[+] You have been logged out successfully.");
             }
-            default -> System.out.println("[!] Invalid option. Please select 1 through 7.");
+            default -> System.out.println("[!] Invalid option. Please select 1 through 8.");
         }
     }
 
@@ -311,18 +318,86 @@ public class ConsoleInterface {
         }
     }
 
+    private void handleVerifyPassword(User user) {
+        System.out.println("\n--- VERIFY ACCOUNT PASSWORD ---");
+        System.out.println("Active User: " + user.getUsername());
+        System.out.println("You can test whether a password is correct for your active account.");
+        String testPassword = readPassword("Enter Password to Verify: ");
+
+        boolean isMatch = PasswordSecurity.verifyPassword(testPassword, user.getPasswordHash(), user.getSalt());
+        if (isMatch) {
+            System.out.println("\n[+] SUCCESS: The password entered is CORRECT!");
+            System.out.println("    - Verification: Cryptographic SHA-256 with 16-byte salt matched.");
+            System.out.println("    - Timing Protection: Verified via MessageDigest.isEqual constant-time comparison.");
+            System.out.println("    - Lockout Status: " + (user.isLocked() ? "LOCKED" : "ACTIVE (Not Locked)"));
+            System.out.println("    - Failed Login Attempts: " + user.getFailedLoginAttempts());
+            displayPasswordStrengthEvaluation(testPassword);
+        } else {
+            System.out.println("\n[-] FAILED: The password entered is INCORRECT.");
+            System.out.println("    The candidate password does not match the stored credentials for '" + user.getUsername() + "'.");
+        }
+    }
+
+    private void handleTestPasswordPolicy() {
+        System.out.println("\n--- PASSWORD COMPLEXITY & POLICY VALIDATOR ---");
+        System.out.println("Test any candidate password to check if it satisfies bank security standards.");
+        String testPassword = readPassword("Enter Candidate Password to Test: ");
+        displayPasswordStrengthEvaluation(testPassword);
+    }
+
+    private void displayPasswordStrengthEvaluation(String password) {
+        System.out.println("\nPassword Policy Evaluation:");
+        boolean len = password != null && password.length() >= 8;
+        boolean upper = password != null && password.chars().anyMatch(Character::isUpperCase);
+        boolean lower = password != null && password.chars().anyMatch(Character::isLowerCase);
+        boolean digit = password != null && password.chars().anyMatch(Character::isDigit);
+        boolean special = password != null && password.chars().anyMatch(ch -> "!@#$%^&*()-_=+[]{}|;:,.<>?/".indexOf(ch) >= 0);
+
+        System.out.printf("  [%s] Minimum 8 characters (Length: %d)\n", len ? "PASS" : "FAIL", password != null ? password.length() : 0);
+        System.out.printf("  [%s] At least one uppercase letter (A-Z)\n", upper ? "PASS" : "FAIL");
+        System.out.printf("  [%s] At least one lowercase letter (a-z)\n", lower ? "PASS" : "FAIL");
+        System.out.printf("  [%s] At least one numeric digit (0-9)\n", digit ? "PASS" : "FAIL");
+        System.out.printf("  [%s] At least one special symbol (!@#$...)\n", special ? "PASS" : "FAIL");
+
+        List<String> violations = PasswordSecurity.validatePasswordStrength(password);
+        if (violations.isEmpty()) {
+            System.out.println("[+] Result: Password meets all security policy requirements.\n");
+        } else {
+            System.out.println("[-] Result: Password does not meet policy requirements.\n");
+        }
+    }
+
     /**
      * Reads a password securely from standard input.
-     * Uses System.console() when available to mask characters; falls back to Scanner for IDE compatibility.
+     * When running interactively, supports viewing/confirming the password.
+     * Falls back to Scanner for automated scripts or environments without a system console.
      */
     private String readPassword(String prompt) {
         Console console = System.console();
+        String password = "";
+
         if (console != null) {
             char[] chars = console.readPassword(prompt);
-            return new String(chars);
+            password = (chars != null) ? new String(chars) : "";
+
+            if (!password.isEmpty()) {
+                System.out.print("  [?] View entered password to verify? (y/N): ");
+                String viewChoice = scanner.nextLine().trim();
+                if (viewChoice.equalsIgnoreCase("y") || viewChoice.equalsIgnoreCase("yes")) {
+                    System.out.println("  --> Entered Password: [" + password + "]");
+                    System.out.print("  Is this correct? (Y/n): ");
+                    String confirm = scanner.nextLine().trim();
+                    if (confirm.equalsIgnoreCase("n") || confirm.equalsIgnoreCase("no")) {
+                        System.out.println("  [!] Please re-enter your password.");
+                        return readPassword(prompt);
+                    }
+                }
+            }
         } else {
             System.out.print(prompt);
-            return scanner.nextLine().trim();
+            password = scanner.nextLine().trim();
         }
+
+        return password;
     }
 }
