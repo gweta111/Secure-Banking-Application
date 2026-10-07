@@ -4,6 +4,18 @@ color 0B
 
 cd /d "%~dp0"
 
+REM Auto-detect Java runtime if not on standard PATH
+where java >nul 2>nul
+if %ERRORLEVEL% NEQ 0 (
+    if exist "%USERPROFILE%\jdk\jdk-21.0.12.1+1\bin\java.exe" set "PATH=%USERPROFILE%\jdk\jdk-21.0.12.1+1\bin;%PATH%"
+    if exist "C:\Program Files\JetBrains\PyCharm 2026.1.2\jbr\bin\java.exe" set "PATH=C:\Program Files\JetBrains\PyCharm 2026.1.2\jbr\bin;%PATH%"
+)
+where javac >nul 2>nul
+if %ERRORLEVEL% NEQ 0 (
+    if exist "%USERPROFILE%\jdk\jdk-21.0.12.1+1\bin\javac.exe" set "PATH=%USERPROFILE%\jdk\jdk-21.0.12.1+1\bin;%PATH%"
+    if exist "C:\Program Files\JetBrains\PyCharm 2026.1.2\jbr\bin\javac.exe" set "PATH=C:\Program Files\JetBrains\PyCharm 2026.1.2\jbr\bin;%PATH%"
+)
+
 REM Check if JAR exists, if not, check if bin exists; otherwise compile
 if not exist "SecureBankApp.jar" (
     if not exist "bin\com\securebank\Main.class" (
