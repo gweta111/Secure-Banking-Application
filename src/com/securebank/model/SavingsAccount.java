@@ -74,7 +74,7 @@ public class SavingsAccount extends Account {
 
     @Override
     public String getAccountSummary() {
-        return String.format("Type: SAVINGS | Balance: $%9.2f | Min Balance: $%7.2f | Annual Interest: %.2f%%",
-                getBalance(), minimumBalance, interestRate.multiply(new BigDecimal("100")));
+        return String.format("Min Balance: $%.2f | Annual Interest: %.2f%%",
+                minimumBalance, interestRate.multiply(new BigDecimal("100")));
     }
 }
